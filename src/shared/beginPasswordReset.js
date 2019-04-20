@@ -2,7 +2,7 @@
 import { ButtonLoading } from '../Shared/components';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import AuthenticationService from './AuthenticationService';
-import { ValidatedForm, TextInputValidated } from 'flexinets-react-validation';
+import { ValidatedForm, TextInputValidated } from './Validation/FlexinetsValidation';
 
 
 
