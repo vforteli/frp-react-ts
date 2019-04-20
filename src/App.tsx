@@ -1,26 +1,27 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component, Fragment } from 'react';
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import Login from './shared/login';
 
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <Router>
+        <Fragment>
+          <div className="modal-blur">
+            {/*<Menu />*/}
+            <div className="site-content">
+              {/*
+              <PrivateRoute exact path='/' component={Home} />
+              <PrivateRoute path='/orders' component={OrdersList} />
+              <PrivateRoute path='/accounts' component={AccountList} />
+              <PrivateRoute path='/mbb/networks' component={NetworkList} />  
+              */}
+              <Route path="/login" component={Login} />
+            </div>
+          </div>
+          {/*<ToastContainer />*/}
+        </Fragment>
+      </Router>
     );
   }
 }
