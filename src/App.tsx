@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import Login from './shared/login';
-import Menu from './shared/menu';
+import Login from './shared/Login';
+import Menu from './shared/Menu';
 import Home from './home/Home';
 import { PrivateRoute } from './shared/PrivateRoute';
 

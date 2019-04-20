@@ -1,33 +1,42 @@
-﻿import React, { Component } from 'react';
+﻿import React, { Component, SyntheticEvent, FormEvent } from 'react';
 import { ButtonLoading } from './components';
 import AuthenticationService from './AuthenticationService';
 import { Route, Link, withRouter } from "react-router-dom";
+import { RouteComponentProps } from "react-router";
 import BeginPasswordReset from './beginPasswordReset';
 import { Alert } from 'reactstrap';
 
 
-class Login extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            username: '',
-            password: '',
-            alertVisible: false
-        };
+interface IState {
+    username: string,
+    password: string,
+    alertVisible: boolean,
+    alertText: string,
+    loading: boolean
+}
+
+class Login extends Component<RouteComponentProps, IState> {
+
+    readonly state: IState = {
+        username: '',
+        password: '',
+        alertVisible: false,
+        alertText: '',
+        loading: false
     }
 
     componentDidMount() {
         if (AuthenticationService.isLoggedIn()) { this.props.history.push("/"); }
     }
 
-    handleChange = (event) => {
-        const target = event.target;
+    handleChange = (event: FormEvent<HTMLInputElement>) => {
+        const target = event.currentTarget;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         const name = target.name;
-        this.setState({ [name]: value });
+        //this.setState({ [name]: value });
     }
 
-    handleLogin = async event => {
+    handleLogin = async (event: SyntheticEvent) => {
         event.preventDefault();
         this.setState({ loading: true });
         const response = await AuthenticationService.login(this.state.username, this.state.password);
@@ -46,13 +55,13 @@ class Login extends Component {
     onAlertDismiss = () => { this.setState({ alertVisible: false }); }
 
 
-    onClosed = (event) => {
+    onClosed = (event: SyntheticEvent) => {
         console.debug('modal closed');
         console.debug(event);
     }
 
     render() {
-        return (            
+        return (
             <div className="col-md-6 offset-md-3">
                 <div className="card mt-3">
                     <div className="card-body">

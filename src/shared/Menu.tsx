@@ -1,23 +1,25 @@
-﻿import React, { Component, Fragment } from 'react';
+﻿import React, { Component, Fragment, SyntheticEvent } from 'react';
 import { NavLink, Link, withRouter } from "react-router-dom";
 import AuthenticationService from './AuthenticationService';
 import { UncontrolledDropdown, DropdownItem, DropdownToggle, DropdownMenu, Navbar, Nav, NavbarBrand, NavbarToggler, NavItem, Collapse } from 'reactstrap';
 import Account from '../account/Account';
 import ChangePassword from '../account/ChangePassword';
+import { RouteComponentProps } from "react-router";
 
-class Menu extends Component {
-    constructor(props) {
-        super(props);
+interface IState {
+    navbarOpen: boolean,
+    accountModalOpen: boolean,
+    passwordModalOpen: boolean
+}
 
-        this.state = {
-            navbarOpen: false,
-            accountModalOpen: false,
-            passwordModalOpen: false
-        };
-    }
+class Menu extends Component<RouteComponentProps, IState> {
+    readonly state: IState = {
+        accountModalOpen: false,
+        navbarOpen: false,
+        passwordModalOpen: false
+    };
 
-
-    handleLogout = async (event) => {
+    readonly handleLogout = async (event: SyntheticEvent) => {
         event.preventDefault();
         await AuthenticationService.logout();
         this.props.history.push("/login");
