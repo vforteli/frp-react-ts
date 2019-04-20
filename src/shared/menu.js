@@ -2,8 +2,8 @@
 import { NavLink, Link, withRouter } from "react-router-dom";
 import AuthenticationService from './AuthenticationService';
 import { UncontrolledDropdown, DropdownItem, DropdownToggle, DropdownMenu, Navbar, Nav, NavbarBrand, NavbarToggler, NavItem, Collapse } from 'reactstrap';
-import Account from './Account/Account';
-import ChangePassword from './Account/ChangePassword';
+import Account from '../account/Account';
+import ChangePassword from '../account/ChangePassword';
 
 class Menu extends Component {
     constructor(props) {

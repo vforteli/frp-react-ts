@@ -1,6 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import Login from './shared/login';
+import Menu from './shared/menu';
+import Home from './home/Home';
+import { PrivateRoute } from './shared/PrivateRoute';
 
 class App extends Component {
   render() {
@@ -8,10 +11,11 @@ class App extends Component {
       <Router>
         <Fragment>
           <div className="modal-blur">
-            {/*<Menu />*/}
+            <Menu />
             <div className="site-content">
-              {/*
+
               <PrivateRoute exact path='/' component={Home} />
+              {/*
               <PrivateRoute path='/orders' component={OrdersList} />
               <PrivateRoute path='/accounts' component={AccountList} />
               <PrivateRoute path='/mbb/networks' component={NetworkList} />  
