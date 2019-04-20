@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { ButtonLoading } from '../Shared/components';
+import { ButtonLoading } from './components';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import AuthenticationService from './AuthenticationService';
 import { ValidatedForm, TextInputValidated } from './Validation/FlexinetsValidation';
