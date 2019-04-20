@@ -1,0 +1,99 @@
+﻿.fln-price {
+    text-align: right;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.to-upper {
+    text-transform: uppercase;
+}
+
+.wrapcolumn {
+    white-space: nowrap;
+    width: 1%;
+    vertical-align: middle !important;
+}
+
+.ipassbg {
+    background: url(/Content/img/ipass-long-1.png) no-repeat right center;
+}
+
+
+.featurebox {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    text-align: center;
+    vertical-align: top;
+}
+
+.featurebox-item {
+    text-align: center;
+    margin: 10px;
+}
+
+.featurebox-icon {
+    border-radius: 50%;
+    border: 1px solid #18ba91;
+    color: #18ba91;
+    padding: 15px;
+    font-size: 2em;
+    height: 70px;
+    width: 70px;
+    display: inline-block;
+}
+
+.featurebox-item h1 {
+    font-size: 1.3em;
+    font-weight: 500;
+}
+
+
+.shop-list-active {
+    transform: scale(1.01,1.01);
+    z-index: 1000;
+    box-shadow: 1px 1px 10px #ddd;
+}
+
+
+.btn-policy {
+    text-align: center;
+    background-color: #f5f5f5;
+    border-color: #cccccc;
+    color: #666666;
+    vertical-align: top;
+    border: 1px solid #eee;
+}
+
+.btn-policy-active {
+    background-color: #fff;
+    transform: scale(1.03,1.03);
+    z-index: 1000;
+    box-shadow: 2px 2px 20px #aaa;
+
+    @extend .btn-policy;
+}
+
+
+.round-green-icon-base {
+    font-size: 2em;
+    border-radius: 50%;
+    border: 2px solid;
+    border-color: lighten($success, 15%);
+    padding: 5px;
+}
+
+.round-green-icon {
+    @extend .round-green-icon-base;
+    color: $success;
+}
+
+.round-green-icon-hidden {
+    @extend .round-green-icon-base;
+    color: transparent;
+}
+
+.cclogo {
+    height: 15px;
+    line-height: 20px;
+}

@@ -1,0 +1,52 @@
+﻿$font-size-base: 0.9rem;
+$body-color: #555;
+$body-bg: #f5f5f5;
+$enable-rounded: false;
+$enable-gradients: true;
+$primary: #ffad45;
+$link-color: #1baaca;
+$navbar-default-bg: #fff;
+$navbar-light-color: #888;
+$enable-shadows: true;
+
+
+.navbar-bg-flexinets {
+    background-color: #fff;
+    box-shadow: 1px 2px 20px #ddd;
+}
+
+input.ng-dirty.ng-invalid {
+    background-color: #ffeeee;
+    border: 1px solid #b94a48;
+}
+
+select.ng-dirty.ng-invalid {
+    background-color: #ffeeee;
+    border: 1px solid #b94a48;
+}
+
+
+a {
+    text-decoration: none;
+
+    :focus {
+        outline: 0; /*removes the dotted border*/
+    }
+
+    img {
+        border: 0;
+    }
+}
+
+.card {
+    box-shadow: 1px 2px 15px #ddd;
+}
+
+.navbar-toggler {
+    border: none !important;
+}
+
+
+.was-validated .form-control:invalid {
+    border-color: none !important;
+}
