@@ -8,11 +8,11 @@ import { Alert } from 'reactstrap';
 
 
 interface IState {
-    username: string,
-    password: string,
-    alertVisible: boolean,
-    alertText: string,
-    loading: boolean
+    username: string;
+    password: string;
+    alertVisible: boolean;
+    alertText: string;
+    loading: boolean;
 }
 
 class Login extends Component<RouteComponentProps, IState> {
@@ -23,7 +23,7 @@ class Login extends Component<RouteComponentProps, IState> {
         alertVisible: false,
         alertText: '',
         loading: false
-    }
+    };
 
     componentDidMount() {
         if (AuthenticationService.isLoggedIn()) { this.props.history.push("/"); }
@@ -44,15 +44,17 @@ class Login extends Component<RouteComponentProps, IState> {
         if (response.status === 200) {
             if (this.props.location && this.props.location.state && this.props.location.state.previousLocation && this.props.location.state.previousLocation.pathname) {
                 this.props.history.push(this.props.location.state.previousLocation.pathname);
+            } else {
+                this.props.history.push("/");
             }
-            else { this.props.history.push("/"); }
+        } else {
+            this.setState({ alertVisible: true, alertText: response.data.error });
         }
-        else { this.setState({ alertVisible: true, alertText: response.data.error }); }
 
     }
 
 
-    onAlertDismiss = () => { this.setState({ alertVisible: false }); }
+    onAlertDismiss = () => { this.setState({ alertVisible: false }); };
 
 
     onClosed = (event: SyntheticEvent) => {
