@@ -9,7 +9,7 @@
             "options": [
                 300
             ]
-        },
+        },        
         "member-access": false,
         "object-literal-sort-keys": false,
         "object-literal-shorthand": false,
@@ -18,8 +18,9 @@
         "no-bitwise": true,
         "no-conditional-assignment": true,
         "no-consecutive-blank-lines": false,
+        "space-before-function-paren": false,
         "no-console": {
-            "severity": "warning",
+            "severity": "none",
             "options": [
                 "debug",
                 "info",

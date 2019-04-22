@@ -1,37 +1,64 @@
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import decode from 'jwt-decode';
-import axios from 'axios';
 import qs from 'qs';
+
+
+export interface IAuthentiactionService {
+    setBaseUrl(url: string): void;
+    getLoginUrl(): string;
+    getLogoutUrl(): string;
+    getAccountUrl(): string;
+    login(username: string, password: string): Promise<void>;
+    beginReset(email: string, returnUrl: string): Promise<void>;
+    completeReset(password: string, passwordConfirm: string, resetId: string): Promise<void>;
+    getCurrentUser(): ICurrentUser;
+}
+
+export interface ICurrentUser {
+    emailAddress: string;
+    firstName: string;
+    lastName: string;
+    roles: string[];
+    isInRole: (role: string) => boolean;
+    settings: {} | null;
+}
+
+export interface IToken {
+    access_token: string;
+    refresh_token_expires: number;
+}
+
+export interface IJWTModel {
+    exp: number;
+}
 
 
 let AUTH_BASE_URL = 'https://authentication.flexinets.se';
 const STORAGE_KEY = 'react_token';
 
-axios.defaults.validateStatus = (status) => { return status >= 200 && status < 500; };
-axios.interceptors.request.use(async config => AuthenticationService.authInterceptor(config));
+axios.defaults.validateStatus = (status) => status >= 200 && status < 500;
+axios.interceptors.request.use(async (config) => AuthenticationService.authInterceptor(config));
 
-let token = null;
-let currentUser = null;
-let refreshPromise = null;
+
+let token: IToken | null = null;
+let currentUser: ICurrentUser | null = null;
+let refreshPromise: Promise<boolean> | null = null;
 
 export default class AuthenticationService {
-    static setBaseUrl(url) { AUTH_BASE_URL = url; }
+    static setBaseUrl(url: string) { AUTH_BASE_URL = url; }
     static getLoginUrl() { return `${AUTH_BASE_URL}/token`; }
     static getLogoutUrl() { return `${AUTH_BASE_URL}/logout`; }
     static getAccountUrl() { return `${AUTH_BASE_URL}/api/account/`; }
 
 
-    static async login(username, password) {
+    static async login(username: string, password: string) {
         this.clearTokenContext();
-        const response = await axios({
-            method: 'post',
-            url: this.getLoginUrl(),
-            data: qs.stringify({
-                'grant_type': 'password',
-                'username': username,
-                'password': password
-            }),
-            config: { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-        });
+        const response = await axios.post(this.getLoginUrl(), qs.stringify({
+            grant_type: 'password',
+            username: username,
+            password: password,
+        }));
+
         if (response.status === 200) {
             this.setJwtToken(response.data);
         }
@@ -44,14 +71,14 @@ export default class AuthenticationService {
      * @param {string} email Email address
      * @param {string} returnUrl Domain part of return url
      */
-    static async beginReset(email, returnUrl) {
+    static async beginReset(email: string, returnUrl: string) {
         const response = await axios({
             method: 'post',
             url: this.getAccountUrl() + 'resetpassword/beginreset/',
             data: {
                 EmailAddress: email,
-                ReturnUrl: returnUrl
-            }
+                ReturnUrl: returnUrl,
+            },
         });
         return response;
     }
@@ -63,15 +90,15 @@ export default class AuthenticationService {
      * @param {string} passwordConfirm Confirm new password
      * @param {string} resetId  resetId
      */
-    static async completeReset(password, passwordConfirm, resetId) {
+    static async completeReset(password: string, passwordConfirm: string, resetId: string) {
         return await axios({
             method: 'post',
             url: this.getAccountUrl() + 'resetpassword/completereset/',
             data: {
                 password: password,
                 passwordConfirm: passwordConfirm,
-                resetId: resetId
-            }
+                resetId: resetId,
+            },
         });
     }
 
@@ -80,7 +107,7 @@ export default class AuthenticationService {
      * Validate a reset token
      * @param {string} resetId Reset id to validate
      */
-    static async validateResetToken(resetId) {
+    static async validateResetToken(resetId: string) {
         return await axios.get(`${this.getAccountUrl()}resetpassword/validateresettoken/${resetId}`);
     }
 
@@ -89,23 +116,25 @@ export default class AuthenticationService {
      * Authinterceptor for axios
      * @param {*} config axios config
      */
-    static async  authInterceptor(config) {
-        // With credentials must be enabled for requests to login and logout url, because the refresh token is stored as an http only cookie
-        if (config.url.indexOf(this.getLoginUrl()) >= 0 || config.url.indexOf(this.getLogoutUrl()) >= 0) {
-            console.debug('withCredentials enabled for request');
-            config.withCredentials = true;
-        }
-        else {
-            const accessToken = await this.getRefreshedAccessToken();
-            if (accessToken !== null) {
-                config.headers.authorization = `Bearer ${accessToken}`;
+    static async  authInterceptor(config: AxiosRequestConfig) {
+        if (config.url) {
+            // With credentials must be enabled for requests to login and logout url, because the refresh token is stored as an http only cookie
+            if (config.url.indexOf(this.getLoginUrl()) >= 0 || config.url.indexOf(this.getLogoutUrl()) >= 0) {
+                console.debug('withCredentials enabled for request');
+                config.withCredentials = true;
+            } else {
+                const accessToken = await this.getRefreshedAccessToken();
+                if (accessToken !== null) {
+                    config.headers.authorization = `Bearer ${accessToken}`;
+                }
             }
         }
+
         return config;
     }
 
 
-    static async  logout() {
+    static async  logout(): Promise<void> {
         this.clearTokenContext();
         await axios.post(this.getLogoutUrl());
         console.debug('Logged out');
@@ -117,9 +146,9 @@ export default class AuthenticationService {
      * Assumed to be logged in if a token exists, and the refresh token has not expired
      * @returns {boolean} True if use is logged in
      */
-    static isLoggedIn() {
-        const token = this.getJwtToken();
-        return token !== null && token.refresh_token_expires > new Date().getTime() / 1000;
+    static isLoggedIn(): boolean {
+        const jwtToken = this.getJwtToken();
+        return jwtToken !== null && jwtToken.refresh_token_expires > new Date().getTime() / 1000;
     }
 
 
@@ -127,22 +156,21 @@ export default class AuthenticationService {
      * Get the currently logged in user from somewhere
      * @returns {object} Returns the logged in user
      */
-    static getCurrentUser() {
+    static getCurrentUser(): ICurrentUser | null {
         if (currentUser === null) {
-            const token = this.getJwtToken();
-            if (token !== null) {
+            const jwtToken = this.getJwtToken();
+            if (jwtToken !== null) {
                 try {
-                    const claims = decode(token.access_token);
+                    const claims = decode(jwtToken.access_token);
                     currentUser = {
-                        EmailAddress: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-                        FirstName: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'],
-                        LastName: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'],
-                        Roles: claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-                        isInRole: function (role) { return this.Roles.indexOf(role) >= 0; },
-                        settings: {}
+                        emailAddress: 'foo', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+                        firstName: 'bar', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'],
+                        lastName: 'herp', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'],
+                        roles: ['GlobalAdmin'], // claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+                        isInRole: function (role) { return this.roles.indexOf(role) >= 0; },
+                        settings: {},
                     };
-                }
-                catch (error) {
+                } catch (error) {
                     console.debug('unable to parse token');
                 }
             }
@@ -154,19 +182,22 @@ export default class AuthenticationService {
     /**
      * Get an access token which has been refreshed if expired
      */
-    static async getRefreshedAccessToken() {
-        const token = this.getJwtToken();
+    static async getRefreshedAccessToken(): Promise<string | null> {
+        let jwtToken = this.getJwtToken();
         try {
-            if (token !== null) {
-                if (this.isJwtTokenExpired(token.access_token)) {
+            if (jwtToken !== null) {
+                if (this.isJwtTokenExpired(jwtToken.access_token)) {
                     console.debug('Token has expired, start refresh maybe');
                     const result = await this.refreshAccessToken();
                     console.debug(`token refresh result ${result}`);
                 }
-                return this.getJwtToken().access_token;
+
+                jwtToken = this.getJwtToken();
+                if (jwtToken) {
+                    return jwtToken.access_token;
+                }
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.debug(error);
             this.clearTokenContext();
         }
@@ -178,7 +209,7 @@ export default class AuthenticationService {
      * Check if an email address is available for an admin account
      * @param {string} email Email address
      */
-    static async checkEmailAvailability(email) {
+    static async checkEmailAvailability(email: string) {
         const response = await axios.get(`${AUTH_BASE_URL}/api/checkemailavailability?email=${email}`);
         return response.data.available;
     }
@@ -189,7 +220,7 @@ export default class AuthenticationService {
      * Save the token to localStorage
      * @param {JSON} jwtTokenJson JWT token
      */
-    static setJwtToken(jwtTokenJson) {
+    static setJwtToken(jwtTokenJson: IToken) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(jwtTokenJson));
         token = jwtTokenJson;
     }
@@ -199,10 +230,13 @@ export default class AuthenticationService {
      * Get the token from localStorage or variable if available
      * @returns {JSON} JWT token
      */
-    static getJwtToken() {
+    static getJwtToken(): IToken | null {
         if (token === null) {
             console.debug('getting token from localstorage');
-            token = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            const tokenJson = localStorage.getItem(STORAGE_KEY);
+            if (tokenJson) {
+                token = JSON.parse(tokenJson);
+            }
         }
         return token;
     }
@@ -216,12 +250,7 @@ export default class AuthenticationService {
 
         if (refreshPromise === null) {
             console.debug('No pending access token refresh, starting new');
-            refreshPromise = axios({
-                method: 'post',
-                url: this.getLoginUrl(),
-                data: qs.stringify({ 'grant_type': 'refresh_token' }),
-                config: { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-            }).then(response => {
+            refreshPromise = axios.post(this.getLoginUrl(), qs.stringify({ grant_type: 'refresh_token' })).then((response: AxiosResponse) => {
                 if (response.status === 200) {
                     console.debug('Refreshed access token');
                     this.setJwtToken(response.data);
@@ -229,7 +258,7 @@ export default class AuthenticationService {
                 }
                 this.clearTokenContext();
                 return false;
-            }).catch(error => {
+            }).catch((error) => {
                 console.debug(error);
                 this.clearTokenContext();
                 return false;
@@ -241,9 +270,9 @@ export default class AuthenticationService {
 
 
     /**
-    * Clear the local token context
-    */
-    static clearTokenContext() {
+     * Clear the local token context
+     */
+    static clearTokenContext(): void {
         console.debug('clearing token context');
         localStorage.removeItem(STORAGE_KEY);
         token = null;
@@ -253,15 +282,17 @@ export default class AuthenticationService {
 
     /**
      * Check if an access token has expired
-     * @param {string} jwtToken JWT token 
+     * @param {string} jwtTokenString JWT token
      * @returns {boolean} True if access token has not expired
      */
-    static isJwtTokenExpired(jwtToken) {
-        const token = decode(jwtToken);
-        if (!token.exp) { return null; }
+    static isJwtTokenExpired(jwtTokenString: string): boolean {
+        const jwtToken = decode(jwtTokenString) as IJWTModel;
+        if (!jwtToken.exp) {
+            return true;
+        }
 
         const expirationDate = new Date(0);
-        expirationDate.setUTCSeconds(token.exp);
+        expirationDate.setUTCSeconds(jwtToken.exp);
 
         return expirationDate < new Date();
     }
