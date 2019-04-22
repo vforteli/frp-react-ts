@@ -25,7 +25,9 @@ class Login extends Component<RouteComponentProps, IState> {
     };
 
     componentDidMount() {
-        if (AuthenticationService.isLoggedIn()) { this.props.history.push('/'); }
+        if (AuthenticationService.isLoggedIn()) {
+            this.props.history.push('/');
+        }
     }
 
     handleChange = (event: FormEvent<HTMLInputElement>) => {
