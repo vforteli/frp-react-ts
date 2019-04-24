@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
 import debounce from 'debounce-promise';
-import { TableLoading } from '../Shared/components';
+import { TableLoading } from '../shared/components';
 
 
 

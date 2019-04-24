@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { TextInputValidated, ValidatedForm, TextAreaInputValidated } from '../shared/Validation/FlexinetsValidation';
 import { ButtonLoading } from '../shared/components';
-import ModalForm from '../Shared/ModalForm';
+import ModalForm from '../shared/ModalForm';
 import OrderLine from './OrderLine';
 
 
