@@ -30,6 +30,13 @@ export interface IToken {
 
 export interface IJWTModel {
     exp: number;
+    'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': string[];
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname': string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname': string;
+    iss: string;
+    sub: string;
 }
 
 
@@ -161,12 +168,13 @@ export default class AuthenticationService {
             const jwtToken = this.getJwtToken();
             if (jwtToken !== null) {
                 try {
-                    const claims = decode(jwtToken.access_token);
+                    const claims: IJWTModel = decode(jwtToken.access_token);
+                    console.debug(claims);
                     currentUser = {
-                        emailAddress: 'foo', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-                        firstName: 'bar', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'],
-                        lastName: 'herp', // claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'],
-                        roles: ['GlobalAdmin'], // claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+                        emailAddress: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+                        firstName: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'],
+                        lastName: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'],
+                        roles: claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
                         isInRole: function (role) { return this.roles.indexOf(role) >= 0; },
                         settings: {},
                     };
