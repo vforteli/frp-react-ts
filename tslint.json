@@ -20,8 +20,7 @@
         "no-consecutive-blank-lines": false,
         "space-before-function-paren": false,
         "no-unused-variable": true,
-        "no-unused-expression": true,
-        "max-classes-per-file": false,
+        "no-unused-expression": true,        
         "no-console": {
             "severity": "none",
             "options": [

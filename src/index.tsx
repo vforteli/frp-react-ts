@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import './styles/site.css';
-import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
