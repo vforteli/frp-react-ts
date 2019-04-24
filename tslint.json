@@ -9,7 +9,7 @@
             "options": [
                 300
             ]
-        },        
+        },
         "member-access": false,
         "object-literal-sort-keys": false,
         "object-literal-shorthand": false,
@@ -21,6 +21,7 @@
         "space-before-function-paren": false,
         "no-unused-variable": true,
         "no-unused-expression": true,
+        "max-classes-per-file": false,
         "no-console": {
             "severity": "none",
             "options": [

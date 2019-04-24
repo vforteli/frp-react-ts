@@ -33,8 +33,7 @@ class Login extends Component<RouteComponentProps, IState> {
     handleChange = (event: FormEvent<HTMLInputElement>) => {
         const target = event.currentTarget;
         const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
-        this.setState({ [name]: value } as Pick<IState, any>);
+        this.setState({ [target.name]: value } as Pick<IState, any>);
     }
 
     handleLogin = async (event: SyntheticEvent) => {
