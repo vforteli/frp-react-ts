@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import AccountList from './Accounts/AccountList';
 import Home from './home/Home';
 import NetworkList from './Networks/NetworkList';
@@ -31,7 +32,7 @@ class App extends Component {
               <Route path='/login' component={Login} />
             </div>
           </div>
-          {/*<ToastContainer />*/}
+          <ToastContainer />
         </Fragment>
       </Router>
     );
