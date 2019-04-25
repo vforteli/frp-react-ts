@@ -10,35 +10,42 @@ import PaginationControl from '../shared/PaginationControl';
 import CreateOrderDetail from './CreateOrderDetail';
 import CustomerTypeIcon from './CustomerTypeIcon';
 import DeleteOrderModal from './DeleteOrderModal';
+import { IOrderListModel } from './IOrder';
 import OrderDetail from './OrderDetail';
 
 interface IState {
-    orders: any[] | null;
+    orders: IOrderListModel[];
     selectedOrders: Set<number>;
     count: number;
     pageSize: number;
     currentPage: number;
     isDeleteModalOpen: boolean;
     orderHubConnected: boolean;
+    listLoading: boolean;
+    deleteOrder: IOrderListModel | null;
 }
 
 
 class OrdersList extends Component<RouteComponentProps, IState> {
     state: IState = {
-        orders: null,
+        orders: [],
         selectedOrders: new Set(),
         count: 0,
         pageSize: 50,
         currentPage: 1,
         isDeleteModalOpen: false,
         orderHubConnected: false,
+        listLoading: false,
+        deleteOrder: null,
     };
 
     orderHubConnection: signalr.HubConnection | null = null;
 
     async componentDidMount() {
+        this.setState({ listLoading: true });
         const response = await axios.get('/api/orders');
         this.setState({
+            listLoading: false,
             orders: response.data.Orders,
             count: response.data.Count,
             selectedOrders: new Set(),
@@ -78,30 +85,32 @@ class OrdersList extends Component<RouteComponentProps, IState> {
 
 
     async componentWillUnmount() {
-        await this.orderHubConnection.stop();
+        if (this.orderHubConnection) {
+            await this.orderHubConnection.stop();
+        }
     }
 
 
-    pageChanged = (page) => {
+    pageChanged = (page: number) => {
         this.setState({ currentPage: page });
     }
 
 
-    confirmDeleteOrder = (order) => {
+    confirmDeleteOrder = (order: IOrderListModel) => {
         this.setState({ isDeleteModalOpen: true, deleteOrder: order });
     }
 
 
-    onClosed = async (result) => {
+    onClosed = async (result: number) => {
         if (result) {
             const response = await axios.get('/api/orders/');
-            this.setState({ users: response.data });
+            this.setState({ orders: response.data });
         }
         this.props.history.push('/orders');
     }
 
 
-    onCreateClosed = async (result) => {
+    onCreateClosed = async (result: number) => {
         if (result) {
             const response = await axios.get('/api/orders/');
             this.setState({ orders: response.data.Orders });
@@ -112,7 +121,7 @@ class OrdersList extends Component<RouteComponentProps, IState> {
     }
 
 
-    onDeleteOrderModalClosed = (result) => {
+    onDeleteOrderModalClosed = (result: number) => {
         this.setState({ isDeleteModalOpen: false, deleteOrder: null });
         if (result) {
             this.setState({ orders: this.state.orders.filter((o) => o.invoice_id !== result) });
@@ -143,18 +152,22 @@ class OrdersList extends Component<RouteComponentProps, IState> {
     }
 
 
-    sendToAccounting = (event) => {
+    sendToAccounting = () => {
         console.debug('send to accounting');
         // todo open log modal
-        this.orderHubConnection.invoke('invoiceOrders', [...this.state.selectedOrders]);
+        if (this.orderHubConnection) {
+            this.orderHubConnection.invoke('invoiceOrders', Array.from(this.state.selectedOrders));
+        }
         // reload orders when complete
     }
 
 
-    sendToDanfoss = (event) => {
+    sendToDanfoss = () => {
         console.debug('send to danfoss');
         // todo open log modal
-        this.orderHubConnection.invoke('sendtoDanfoss', [...this.state.selectedOrders]);
+        if (this.orderHubConnection) {
+            this.orderHubConnection.invoke('sendtoDanfoss', Array.from(this.state.selectedOrders));
+        }
         // reload orders when complete
     }
 
@@ -163,7 +176,7 @@ class OrdersList extends Component<RouteComponentProps, IState> {
     render() {
         return (
             <div className='container'>
-                {this.state.isDeleteModalOpen && <DeleteOrderModal onClosed={this.onDeleteOrderModalClosed} deleteOrder={this.state.deleteOrder} />}
+                {this.state.isDeleteModalOpen && <DeleteOrderModal onClosed={this.onDeleteOrderModalClosed} deleteOrder={this.state.deleteOrder!} />}
 
                 <h3>Orders</h3>
 
@@ -174,9 +187,9 @@ class OrdersList extends Component<RouteComponentProps, IState> {
                         <button className='btn btn-info' disabled={!this.state.orderHubConnected || this.state.selectedOrders.size === 0} onClick={this.sendToDanfoss}><i className='fas fa-cloud-upload-alt'></i> Send to Danfoss</button>{' '}
                         [<strong>{this.state.selectedOrders.size}</strong> selected]
 
-                        <TableLoading loading={this.state.orders === null}>Getting orders</TableLoading>
+                        <TableLoading loading={this.state.listLoading}>Getting orders</TableLoading>
 
-                        {this.state.orders && this.state.orders.length > 0 &&
+                        {this.state.orders.length > 0 &&
                             <Fragment>
                                 <table className='table table-hover users-table'>
                                     <thead>
@@ -194,7 +207,7 @@ class OrdersList extends Component<RouteComponentProps, IState> {
                                     <tbody>
                                         {this.state.orders.map((order) =>
                                             <tr key={order.invoice_id}>
-                                                <td className='wrapcolumn'><CustomInput type='checkbox' checked={this.state.selectedOrders.has(order.invoice_id) || false} onChange={this.toggleOrder} id={order.invoice_id} /></td>
+                                                <td className='wrapcolumn'><CustomInput type='checkbox' checked={this.state.selectedOrders.has(order.invoice_id) || false} onChange={this.toggleOrder} id={order.invoice_id.toString()} /></td>
                                                 <td>{order.status === 0 && <i className={order.hold ? 'fas fa-pause text-warning' : 'fas fa-check text-success'}></i>}</td>
                                                 <td><CustomerTypeIcon customerType={order.CustomerType} /></td>
                                                 <td><Link to={'/orders/edit/' + order.invoice_id}>{order.address_name}</Link></td>

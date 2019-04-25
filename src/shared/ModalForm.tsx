@@ -1,19 +1,26 @@
 ﻿import { Component } from 'react';
 
-interface IModalFormProps {
+export interface IModalFormProps {
     onClosed: (result: any) => void;
 }
 
-interface IState {
+export interface IModalFormState {
     modal: boolean;
     result: any;
 }
 
-export default class ModalForm extends Component<IModalFormProps, IState> {
+export default class ModalForm<T extends IModalFormProps, S extends IModalFormState> extends Component<T, S> {
     dismiss = () => {
         this.setState({
             modal: false,
             result: false,
+        });
+    }
+
+    close = (result: any) => {
+        this.setState({
+            modal: false,
+            result: result,
         });
     }
 
